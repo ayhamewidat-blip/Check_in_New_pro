@@ -1,23 +1,26 @@
-description: "Comprehensive HR Portal AI Evaluation - All Business Rules"
+description: "Comprehensive HR Portal AI Evaluation - All Rules & Edge Cases"
 
 providers:
   - id: ollama:llama3
     config:
-      temperature: 0
+      temperature: 0.1
 
 prompts:
   - |
-    You are an AI validation assistant for the Jodayn Employee Portal. 
-    Enforce these strict business rules based on system logs and user requests:
-    - Rule 1 (Root Access): If device has root access, return MSG002 ("الجهاز يحتوي على صلاحيات غير مسموح بها").
-    - Rule 2 (Login Missing Username): If username is empty, return MSG003 ("الرجاء إدخال اسم المستخدم").
-    - Rule 3 (Login Missing Password): If password is empty, return MSG004 ("الرجاء إدخال كلمة المرور").
-    - Rule 4 (Invalid Credentials): If credentials don't match, return MSG005 ("اسم المستخدم أو كلمة المرور غير صحيحة").
-    - Rule 5 (Fake GPS): If user uses fake GPS during check-in, return MSG007 ("تم اكتشاف موقع وهمي غير مسموح به").
-    - Rule 6 (Outside Work Hours): If user checks in outside work hours, return MSG008 ("تسجيل الحضور غير متاح في هذا الوقت").
-    - Rule 7 (Multiple Devices): If account is accessed from an unregistered device, return MSG099 ("الجهاز غير مسجل في النظام").
-    
-    User Request / Scenario: {{user_input}}
+    [System Role: Senior HR Portal Security & Validation Bot]
+    You are the official validation engine for the Jodayn Employee Portal. 
+    Analyze the user request/log and respond ONLY with the appropriate business rule message code and a concise justification in Arabic.
+
+    Rules Catalog:
+    - Root/Jailbreak Detected -> MSG002 ("الجهاز يحتوي على صلاحيات غير مسموح بها")
+    - Missing Username -> MSG003 ("الرجاء إدخال اسم المستخدم")
+    - Missing Password -> MSG004 ("الرجاء إدخال كلمة المرور")
+    - Invalid Auth -> MSG005 ("اسم المستخدم أو كلمة المرور غير صحيحة")
+    - Mock/Fake GPS -> MSG007 ("تم اكتشاف موقع وهمي غير مسموح به")
+    - Out of Hours -> MSG008 ("تسجيل الحضور غير متاح في هذا الوقت")
+    - Unregistered Device -> MSG099 ("الجهاز غير مسجل في النظام")
+
+    Scenario: {{user_input}}
 
 tests:
   - description: "Business Rule Test: Root access detection (MSG002)"
@@ -26,6 +29,8 @@ tests:
     assert:
       - type: icontains
         value: "MSG002"
+      - type: latency
+        threshold: 60000
 
   - description: "Login Test: Missing username (MSG003)"
     vars:
@@ -33,6 +38,8 @@ tests:
     assert:
       - type: icontains
         value: "MSG003"
+      - type: latency
+        threshold: 60000
 
   - description: "Login Test: Missing password (MSG004)"
     vars:
@@ -40,6 +47,8 @@ tests:
     assert:
       - type: icontains
         value: "MSG004"
+      - type: latency
+        threshold: 60000
 
   - description: "Login Test: Invalid credentials (MSG005)"
     vars:
@@ -47,6 +56,8 @@ tests:
     assert:
       - type: icontains
         value: "MSG005"
+      - type: latency
+        threshold: 60000
 
   - description: "Security Test: Unregistered device access (MSG099)"
     vars:
@@ -54,6 +65,8 @@ tests:
     assert:
       - type: icontains
         value: "MSG099"
+      - type: latency
+        threshold: 60000
 
   - description: "Attendance Test: Fake GPS detection during check-in (MSG007)"
     vars:
@@ -61,6 +74,8 @@ tests:
     assert:
       - type: icontains
         value: "MSG007"
+      - type: latency
+        threshold: 60000
 
   - description: "Attendance Test: Check-in outside work hours (MSG008)"
     vars:
@@ -68,3 +83,23 @@ tests:
     assert:
       - type: icontains
         value: "MSG008"
+      - type: latency
+        threshold: 60000
+
+  - description: "Advanced Edge Case: Root access with conflicting info"
+    vars:
+      user_input: "User logged in successfully with valid credentials, but system diagnostic shows root/superuser binaries present."
+    assert:
+      - type: icontains
+        value: "MSG002"
+      - type: latency
+        threshold: 60000
+
+  - description: "Advanced Edge Case: Empty fields priority check"
+    vars:
+      user_input: "User submitted check-in form with both username and password fields completely blank."
+    assert:
+      - type: icontains
+        value: "MSG003"
+      - type: latency
+        threshold: 60000
