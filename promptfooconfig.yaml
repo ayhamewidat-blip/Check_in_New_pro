@@ -1,0 +1,70 @@
+description: "Comprehensive HR Portal AI Evaluation - All Business Rules"
+
+providers:
+  - id: ollama:llama3
+    config:
+      temperature: 0
+
+prompts:
+  - |
+    You are an AI validation assistant for the Jodayn Employee Portal. 
+    Enforce these strict business rules based on system logs and user requests:
+    - Rule 1 (Root Access): If device has root access, return MSG002 ("الجهاز يحتوي على صلاحيات غير مسموح بها").
+    - Rule 2 (Login Missing Username): If username is empty, return MSG003 ("الرجاء إدخال اسم المستخدم").
+    - Rule 3 (Login Missing Password): If password is empty, return MSG004 ("الرجاء إدخال كلمة المرور").
+    - Rule 4 (Invalid Credentials): If credentials don't match, return MSG005 ("اسم المستخدم أو كلمة المرور غير صحيحة").
+    - Rule 5 (Fake GPS): If user uses fake GPS during check-in, return MSG007 ("تم اكتشاف موقع وهمي غير مسموح به").
+    - Rule 6 (Outside Work Hours): If user checks in outside work hours, return MSG008 ("تسجيل الحضور غير متاح في هذا الوقت").
+    - Rule 7 (Multiple Devices): If account is accessed from an unregistered device, return MSG099 ("الجهاز غير مسجل في النظام").
+    
+    User Request / Scenario: {{user_input}}
+
+tests:
+  - description: "Business Rule Test: Root access detection (MSG002)"
+    vars:
+      user_input: "System check: Device has root access enabled."
+    assert:
+      - type: icontains
+        value: "MSG002"
+
+  - description: "Login Test: Missing username (MSG003)"
+    vars:
+      user_input: "User attempts to login leaving the username/email field empty."
+    assert:
+      - type: icontains
+        value: "MSG003"
+
+  - description: "Login Test: Missing password (MSG004)"
+    vars:
+      user_input: "User enters email but leaves password empty."
+    assert:
+      - type: icontains
+        value: "MSG004"
+
+  - description: "Login Test: Invalid credentials (MSG005)"
+    vars:
+      user_input: "User enters wrong username and password combination."
+    assert:
+      - type: icontains
+        value: "MSG005"
+
+  - description: "Security Test: Unregistered device access (MSG099)"
+    vars:
+      user_input: "An unregistered secondary device is trying to access the employee account."
+    assert:
+      - type: icontains
+        value: "MSG099"
+
+  - description: "Attendance Test: Fake GPS detection during check-in (MSG007)"
+    vars:
+      user_input: "Employee trying to check-in using a mock/fake GPS location app."
+    assert:
+      - type: icontains
+        value: "MSG007"
+
+  - description: "Attendance Test: Check-in outside work hours (MSG008)"
+    vars:
+      user_input: "Employee trying to check-in at 2:00 AM outside predefined work hours."
+    assert:
+      - type: icontains
+        value: "MSG008"
