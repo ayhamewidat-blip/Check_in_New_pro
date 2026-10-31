@@ -1,4 +1,4 @@
-name: Promptfoo AI Evaluation
+name: Promptfoo AI Evaluation & PR Reporting
 
 on:
   push:
@@ -9,6 +9,10 @@ on:
 jobs:
   evaluate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # السماح للـ Workflow لكتابة التعليقات على الـ PR
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,13 +20,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
-      - name: Install Dependencies
-        run: npm ci || npm install
-
-      - name: Run Promptfoo Evaluation
+      - name: Run Promptfoo Evaluation & Generate PR Comment
         uses: promptfoo/promptfoo-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          # أو يمكن ربط أي مفتاح API آخر عبر الـ Secrets
+          github-token: ${{ secrets.GITHUB_TOKEN }}
