@@ -103,3 +103,6 @@ tests:
         value: "MSG003"
       - type: latency
         threshold: 60000
+
+        git add .
+git commit -m "test: trigger automated promptfoo PR comment"
